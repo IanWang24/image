@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+
+
+{%block head_title %}上傳圖片{% endblock %}
+{% block content %}
+
+<div class="main">
+    <!-- Create a Form -->
+    <form method="POST">
+        <!-- Security token by Django -->
+        {% csrf_token %}
+        確定要移除 ?
+        <input type="submit" value="Yes" />
+        <a href='http://127.0.0.1:8000/display/'>返回 </a>
+    </form>
+</div>
+
+
+{% endblock %}
