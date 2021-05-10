@@ -26,15 +26,22 @@ def post(request):
 		file = request.FILES["image"]
 		content = request.POST["description"]
 		document = UploadImage.objects.create(image = file , description = content)
-		document.save()
+		# print("C:/Users/Ian/Desktop/api/upload_media/" + str(document.image))
+		# file = "C:/Users/Ian/Desktop/api/upload_media/" + str(document.image)
+		# img_gray = cv2.imread(file, cv2.IMREAD_GRAYSCALE)
+		# filename = "C:/Users/Ian/Desktop/api/result/"+str(document.image)
+		# print(filename)
+		# cv2.imwrite(filename ,img_gray)
+		# result.save()
+		# img = cv2.imread('document.')
 		url['url'] = fs.url(document.image)
+		# print("C:/Users/Ian/Desktop/api/upload_media/" + str(document.image))
+		# cv2.imshow('My Image',img_gray)
 	return render(request,"upload.html",url)
-
-
 
 def display_images(request):
 	allimages = UploadImage.objects.all()
-	# model -> process -> save_to_result -> 
+	# model -> process -> save_to_result ->
 	return render(request, 'display.html', {'images' : allimages})
 
 
@@ -44,6 +51,9 @@ def delete (request, pk):
 		img.delete()                     # delete the cat.
 		return redirect('http://127.0.0.1:8000/display/')             # Finally, redirect to the homepage.
 	return render(request, 'delete_view.html', {'img': img})
+
+
+
 
 
 

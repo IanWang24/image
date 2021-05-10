@@ -123,6 +123,9 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/3.2/howto/static-files/
 
 STATIC_URL = '/static/'
+STATICFILES_DIRS = [ #DTL會在這個列表的路徑中查詢靜態檔案
+     os.path.join(BASE_DIR, "static")
+]
 MEDIA_ROOT = os.path.join(BASE_DIR, '..' ,'upload_media')
 MEDIA_URL = '/media/'
 
