@@ -1,0 +1,142 @@
+ {% extends 'base.html' %} {%block head_title %}分析結果{% endblock %} {{% load static %} }{% block content %}
+
+<head>
+
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Amatic+SC">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <!-- <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script> -->
+    <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script> -->
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+    <style>
+        body,
+        html {
+            height: 100%
+        }
+
+        body,
+        h1,
+        h2,
+        h3,
+        h4,
+        h5,
+        h6 {
+            font-family: "Segoe UI", sans-serif
+        }
+
+        .menu {
+            display: none
+        }
+
+        .bgimg {
+            background-repeat: no-repeat;
+            background-size: cover;
+            min-height: 90%;
+            max-width: 150%;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Navbar (sit on top) -->
+    <div class="w3-top w3-hide-small">
+        <div class="w3-bar w3-xlarge w3-black w3-opacity w3-hover-opacity-off" id="myNavbar">
+            <a href="http://127.0.0.1:8000/upload/" class="w3-bar-item w3-button">HOME</a>
+            <a href="http://127.0.0.1:8000/upload/#menu" class="w3-bar-item w3-button">偵測魚兒</a>
+            <a href="#contact" class="w3-bar-item w3-button">魚兒庫存</a>
+            <!-- <a href="http://127.0.0.1:8000/upload/#about" class="w3-bar-item w3-button">關於我們</a> -->
+        </div>
+    </div>
+
+    <!-- Header with image -->
+    <header class="bgimg w3-display-container" id="home">
+        <div class="w3-display-bottomleft ">
+            <img src="{% static '1.png' %}" alt="My image" width="1500px">
+            <!-- <span class="w3-tag w3-xlarge">Open all year</span> -->
+
+        </div>
+
+        <div class="w3-display-middle w3-center">
+            <span class="w3-text-white  w3-hide-medium" style="font-size:50px"><b>Hey!一起抓魚去吧!</b></span>
+            <p><a href="#contact" class="w3-button w3-xxlarge w3-black">Let's Go !!!</a></p>
+        </div>
+    </header>
+
+    <!-- Contact -->
+    <div class="w3-container w3-padding-64 w3-blue-grey  w3-xlarge" id=contact>
+        <div class="w3-content">
+            <h1 class="w3-center w3-jumbo" style="margin-bottom:20px"><b>小魚兒庫存中心</b></h1>
+            <p class="w3-center"><span class="w3-tag">盡情游吧!</span> 這裡是小魚兒的資料庫</p>
+            <table class="table table-striped w3-light-grey w3-center">
+                <thead>
+                    <tr>
+                        <th>圖片描述</th>
+                        <th>圖片</th>
+                        <th>魚苗數量</th>
+                    </tr>
+                </thead>
+                <tbody>
+
+                    {% for img in images %}
+                    <tr>
+                        <td><strong>{{img.description}}</strong></td>
+                        <td>
+                            <img src="{{img.image.url}}" style="display:initial;margin:auto;" width="250">
+                            <img src="{{img.after_predict.url}}" style="display:initial;margin:auto;" width="250">
+
+                            <!-- DELETE連結 -->
+                            <form action="{% url 'delete' pk=img.id %}" method="POST">
+                                {% csrf_token %}
+                                <a href='http://127.0.0.1:8000/delete/{{img.pk}}' style="color: darkblue;">DELETE </a>
+                            </form>
+
+                            <!-- 刪除按鈕 -->
+                            <form action="{% url 'delete' pk=img.id %}" method="POST">
+                                {% csrf_token %}
+                                <!-- Button trigger modal -->
+                                <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleModal">刪除</button>
+                                <form method="POST">
+                                    {% csrf_token %}
+                                    <!-- Modal -->
+                                    <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                                        <div class="modal-dialog">
+                                            <div class="modal-content">
+                                                <div class="modal-header">
+                                                    <h5 class="modal-title" id="exampleModalLabel">Modal title</h5>
+                                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                </div>
+                                                <div class="modal-body">
+                                                    確定要移除 ?
+                                                </div>
+                                                <div class="modal-footer">
+                                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                                    <button type="button" class="btn btn-primary" value="Yes">刪除此筆資料!</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </form>
+                            </form>
+
+
+                        </td>
+                        <td>{{img.quantity}}隻</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+
+    <!-- Footer -->
+    <footer class="w3-center w3-black w3-padding-48 w3-xxlarge">
+        <p class="w3-hover-text-green">有興趣歡迎聯繫我們喔!></p>
+    </footer>
+
+</body>
+{% endblock %}

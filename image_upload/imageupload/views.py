@@ -8,15 +8,28 @@ from rest_framework.parsers import MultiPartParser, FormParser
 from django.conf import settings
 from django.core.files.storage import FileSystemStorage
 from django.http import HttpResponse
+from django.core.files.base import ContentFile
 
+import cv2
+import time
+import tensorflow as tf
 
+from tqdm import tqdm
+from .core.utils import detect,vid_detect,load_model
 
+from statistics import mean
+from tensorflow.python.saved_model import tag_constants
+from tensorflow.compat.v1 import InteractiveSession
 
 
 
 from .models import UploadImage,Video
 from .serializers import MyFileSerializer
+from .core.utils import detect,vid_detect,load_model
 
+pb_path = r"imageupload/checkpoints/yolov4-416"
+saved_model_loaded = tf.saved_model.load(pb_path, tags=[tag_constants.SERVING])
+infer = saved_model_loaded.signatures['serving_default']
 
 def post(request):
 	url = {}
@@ -35,9 +48,9 @@ def post(request):
 	return render(request,"upload.html" ,{'img' :last})
 
 def display_images(request):
-	allimages = UploadImage.objects.all()
+	allvideo = Video.objects.all()
 	# model -> process -> save_to_result ->
-	return render(request, 'display.html', {'images' : allimages})
+	return render(request, 'display.html', {'videos' : allvideo})
 
 
 def delete (request, pk):
@@ -52,8 +65,22 @@ def post_video (request):
 		file= request.FILES["video"]
 		content = request.POST["caption"]
 		document = Video.objects.create(video = file , caption = content)
-	return render(request,"uploadvideo.html")
+		last = Video.objects.last()
+		count = vid_detect(
+				r'../upload_media/{}'.format(last.video.name),
+				r'../upload_media/predict_video/{}'.format(last.video.name),
+				infer
+			)
+		c = mean(count)
+		video_path = r'predict_video/{}'.format(last.video.name)
+		print(video_path)
+		last.after_predict = video_path
+		last.quantity = int(c)
+		last.save()
+	all = Video.objects.last()
 
+
+	return render(request,"uploadvideo.html",{'video': all})
 
 
 

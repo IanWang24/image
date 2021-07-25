@@ -2,6 +2,15 @@ import cv2
 import numpy as np
 import tensorflow as tf
 from tqdm import tqdm
+from statistics import mean
+from tensorflow.python.saved_model import tag_constants
+from tensorflow.compat.v1 import InteractiveSession
+
+def load_model(infer):
+    pb_path = r"imageupload/checkpoints/yolov4-416"
+    saved_model_loaded = tf.saved_model.load(pb_path, tags=[tag_constants.SERVING])
+    infer = saved_model_loaded.signatures['serving_default']
+    return infer
 
 
 def process_data(frame):
@@ -51,7 +60,7 @@ def draw_bbox(boxes, scores, image):
     return image, count
 
 
-def detect(img, ouput_path, model):
+def detect(img, model):
     # for Video
     # cap = cv2.VideoCapture(video_path)
     # cap.set(cv2.CAP_PROP_FPS, 30)  # set fps for my weak pc
@@ -63,8 +72,6 @@ def detect(img, ouput_path, model):
     # else:
     #     print("error video path")
 
-    
-    
     batch_data = process_data(img)  # resize image and transform to tensor-like object
 
     # for using model to get predict information like: bondel boxes, scores or somthing
@@ -86,6 +93,53 @@ def detect(img, ouput_path, model):
 
     img_tmp, c_tmp = draw_bbox(boxes, scores, img)  # draw bondel boxes and return counter
 
-    
-    cv2.imwrite('output.jpg', img_tmp)
+
+    # cv2.imwrite('output.jpg', img_tmp)
     return c_tmp, img_tmp
+
+
+def vid_detect(video_path, ouput_path, model):
+    cap = cv2.VideoCapture(str(video_path))
+    cap.set(cv2.CAP_PROP_FPS, 30)  # set fps for my weak pc
+    fourcc = cv2.VideoWriter_fourcc('V','P','8','0')
+    out = cv2.VideoWriter(ouput_path, fourcc, 30, (416, 416))
+
+    c = []
+    ret=[]
+    frame = []
+
+    if cap.isOpened():
+        ret, frame = cap.read()
+    else:
+        print("error video path")
+    for i in tqdm(range(100)):
+        while ret:
+
+            frame = cv2.resize(frame, (416, 416))
+            batch_data = process_data(frame)  # resize image and transform to tensor-like object
+
+            # for using model to get predict information like: bondel boxes, scores or somthing
+
+            pred_bbox = model(batch_data)
+            for key, value in pred_bbox.items():
+                boxes = value[:, :, 0:4]
+                pred_conf = value[:, :, 4:]
+
+            boxes, scores, _, _ = tf.image.combined_non_max_suppression(
+                boxes=tf.reshape(boxes, (tf.shape(boxes)[0], -1, 1, 4)),
+                scores=tf.reshape(
+                    pred_conf, (tf.shape(pred_conf)[0], -1, tf.shape(pred_conf)[-1])),
+                max_output_size_per_class=300,
+                max_total_size=300,
+                iou_threshold=0.45,
+                score_threshold=0.70
+            )
+
+            img_tmp, c_tmp = draw_bbox(boxes, scores, frame)  # draw bondel boxes and return counter
+
+            c.append(c_tmp)
+            out.write(img_tmp)
+            ret, frame = cap.read()
+
+            break
+    return c

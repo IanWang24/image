@@ -4,7 +4,7 @@ from PIL import Image
 import numpy as np
 from io import BytesIO
 from django.core.files.base import ContentFile
-from .core.utils import detect  
+from .core.utils import detect,vid_detect,load_model
 import cv2
 
 from tqdm import tqdm
@@ -18,16 +18,13 @@ from tensorflow.python.saved_model import tag_constants
 from tensorflow.compat.v1 import InteractiveSession
 
 
-pb_path = r"imageupload/checkpoints/yolov4-416"
-saved_model_loaded = tf.saved_model.load(pb_path, tags=[tag_constants.SERVING])
-infer = saved_model_loaded.signatures['serving_default']
 
 
 class UploadImage(models.Model):
     image = models.FileField(upload_to='upload/')
     description = models.CharField(max_length=255)
     uploaded_at = models.DateTimeField(auto_now_add=True)
-    after_predict =models.FileField(upload_to='predict_image/')
+    after_predict =models.FileField(upload_to='predict_image/video')
     quantity = models.IntegerField(blank=False, default=0)
 
 
@@ -40,11 +37,12 @@ class UploadImage(models.Model):
         image_data = cv2.resize(original_image, (416, 416))
 
 
-        count, image = detect(image_data, "OuO", infer)
+        count, image = detect(image_data, infer)
 
         self.quantity = count
+        image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+        img = Image.fromarray(image)
 
-        img = Image.fromarray(original_image)
         buffer = BytesIO()
         img.save(buffer, format='JPEG')
         img_png = buffer.getvalue()
@@ -57,16 +55,13 @@ class UploadImage(models.Model):
 class Video(models.Model):
     caption=models.CharField(max_length=100)
     video=models.FileField(upload_to="video/")
-    after_predict =models.FileField(upload_to='predict_video/')
+    after_predict =models.FileField(upload_to='predict_video/video/')
     quantity = models.IntegerField(blank=False, default=0)
 
-    def save(self, *args, **kwargs):
-
-        self.after_predict.save("predict video name:\t" + str(self.video)+".mp4" , ContentFile(img_png), save=False)
-
-
-
-
-
-
-        super().save(*args, **kwargs)
+    # def save(self, *args, **kwargs):
+    #     count = vid_detect(
+    #             r'upload_media/videos/{}'.format(self.video),
+    #             r'upload_media/predict_video/output_{}'.format(request.FILES["video"]),
+    #             infer
+    #         )
+    # super().save(*args, **kwargs)
