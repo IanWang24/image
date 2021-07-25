@@ -1,0 +1,52 @@
+{% extends 'base.html' %}
+
+
+{%block head_title %}上傳圖片{% endblock %}
+{% block content %}
+
+<header>
+    <div class="toptitle">
+        <strong class="title1">魚苗數量檢測站</strong>
+    </div>
+</header>
+
+<body>
+    <ul class="nav nav-tabs">
+        <li class="nav-item">
+            <a class="nav-link active" aria-current="page" href="upload.html">圖片上傳</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link active" aria-current="page" href="display.html" tabindex="-1" aria-disabled="true">Display</a>
+        </li>
+    </ul>
+
+
+    <form method="POST" class="post-form" enctype="multipart/form-data">
+        {% csrf_token %} {{ MyFileSerializer.as_p }}
+
+        <div class="mb-3">
+            <label for="exampleFormControlTextarea1" class="form-label">圖片描述：</label>
+            <textarea class="form-control" name="caption" rows="3"></textarea>
+        </div>
+        <!-- <p>圖片描述：<input type="text" name="description"></p> -->
+        <!-- <input type="file" name="image"> -->
+        <div class="mb-3">
+            <input class="form-control" type="file" name="video" accept="video/*">
+        </div>
+        <div class="col-12">
+            <button type="submit" class="btn btn-primary">上傳圖片</button>
+        </div>
+        <!-- <button type="submit">上傳圖片</button> -->
+        <div class="col-3">
+            <p>Uploaded file: <a href=></a></p>
+            <!-- <div class="loadimg">
+                <img src="{{ url }}">
+            </div> -->
+        </div>
+        <div class="loadimg">
+            <img src="{{ url }}">
+        </div>
+
+    </form>
+</body>
+{% endblock %}

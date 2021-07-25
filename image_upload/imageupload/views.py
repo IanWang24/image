@@ -14,30 +14,25 @@ from django.http import HttpResponse
 
 
 
-from .models import UploadImage
+from .models import UploadImage,Video
 from .serializers import MyFileSerializer
 
 
 def post(request):
 	url = {}
+	pred_url = {}
+	content={}
+	last = UploadImage.objects.last()
 	if request.method =="POST":
-
 		fs = FileSystemStorage()
 		file = request.FILES["image"]
 		content = request.POST["description"]
 		document = UploadImage.objects.create(image = file , description = content)
-		# print("C:/Users/Ian/Desktop/api/upload_media/" + str(document.image))
-		# file = "C:/Users/Ian/Desktop/api/upload_media/" + str(document.image)
-		# img_gray = cv2.imread(file, cv2.IMREAD_GRAYSCALE)
-		# filename = "C:/Users/Ian/Desktop/api/result/"+str(document.image)
-		# print(filename)
-		# cv2.imwrite(filename ,img_gray)
-		# result.save()
-		# img = cv2.imread('document.')
 		url['url'] = fs.url(document.image)
-		# print("C:/Users/Ian/Desktop/api/upload_media/" + str(document.image))
-		# cv2.imshow('My Image',img_gray)
-	return render(request,"upload.html",url)
+		pred_url['url']=fs.url(document.after_predict)
+		last = UploadImage.objects.last()
+
+	return render(request,"upload.html" ,{'img' :last})
 
 def display_images(request):
 	allimages = UploadImage.objects.all()
@@ -51,6 +46,15 @@ def delete (request, pk):
 		img.delete()                     # delete the cat.
 		return redirect('http://127.0.0.1:8000/display/')             # Finally, redirect to the homepage.
 	return render(request, 'delete_view.html', {'img': img})
+
+def post_video (request):
+	if request.method =="POST":
+		file= request.FILES["video"]
+		content = request.POST["caption"]
+		document = Video.objects.create(video = file , caption = content)
+	return render(request,"uploadvideo.html")
+
+
 
 
 
